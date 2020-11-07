@@ -2,9 +2,13 @@ import React, { Component } from 'react';
 import Single from './Single';
 
 class Grid extends Component {
+    deleteData(docID) {
+        this.props.deleteData(docID);
+    }
+
     renderList(){
         return this.props.items.map((items, i) =>(
-            <Single key={i+1} items={items}/>
+            <Single key={i+1} items={items} deleteData={this.deleteData.bind(this)}/>
         ));
     }
     render() { 

@@ -1,30 +1,53 @@
 import React, { Component } from 'react';
 import './App.css';
-import firebase from 'firebase';
-import data from '../data.json';
+import firebase from '../firebase';
 import Grid from './Grid';
+import Form from './Form';
 
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = { data };
+    this.state = { 
+      contacts: []
+    };
   }
  
-  componentWillMount() {
-    firebase.initializeApp({
-        apiKey: "AIzaSyCgKO7Z8iBa1BwQmA38Fkf-pAjVRj356rc",
-        authDomain: "crm-react-4d9ba.firebaseapp.com",
-        databaseURL: "https://crm-react-4d9ba.firebaseio.com",
-        projectId: "crm-react-4d9ba",
-        storageBucket: "crm-react-4d9ba.appspot.com",
-        messagingSenderId: "521868781544",
-        appId: "1:521868781544:web:c8ad48569148210fbc665d",
-        measurementId: "G-P041GX7YEV"
+  updateData(){
+    const db = firebase.firestore();
+    const settings = { timestampsInSnapshots: true};
+    db.settings (settings);
+
+    db.collection('contact').get()
+    .then((snapshot) => {
+      let contacts = [];
+      snapshot.forEach((doc) => {
+        let contact = Object.assign({id: doc.id}, doc.data());
+        contacts.push(contact);
+      });
+      this.setState({
+        contacts: contacts
+      })
+    })
+    .catch((err) => {
+      console.log('erreur!', err);
     })
   }
 
-  render() {
+deleteData(docID) {
+    const db = firebase.firestore();
+    const settings = { timestampsInSnapshots: true};
+    db.settings (settings);
+
+    db.collection('contacts').doc(docID).delete();
+    this.updateData();
+}
+
+  componentWillMount() {
+    this.updateData();
+  }
+
+  render() { 
     return (
       <div>
         <div className="navbar-fixed">
@@ -35,7 +58,8 @@ class App extends Component {
           </nav>
         </div>
         <div>
-          <Grid items={this.state.data}/>
+          <Form updateData={this.updateData.bind(this)}/>
+          <Grid items={this.state.contacts} deleteData={this.deleteData.bind(this)}/>
         </div>
       </div>
     );
